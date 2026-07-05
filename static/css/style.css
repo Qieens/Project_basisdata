@@ -1,0 +1,293 @@
+/* ===================================
+        MOVIETIX THEME
+=================================== */
+
+:root{
+    --maroon:#6D071A;
+    --maroon-dark:#4A0412;
+    --gold:#D4AF37;
+    --gold-hover:#B8860B;
+    --white:#FFFFFF;
+    --silver:#D1D5DB;
+    --dark:#121212;
+}
+
+/* ===================================
+        GLOBAL
+=================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:linear-gradient(
+        135deg,
+        #3B0A1B,
+        #5B0E2D,
+        #7A1636
+    );
+    min-height:100vh;
+    color:var(--white);
+}
+
+a{
+    text-decoration:none;
+    color:var(--gold);
+    transition:.3s;
+}
+
+a:hover{
+    color:var(--white);
+}
+
+/* ===================================
+        BUTTON
+=================================== */
+
+.btn-gold{
+
+    background:var(--gold);
+
+    color:#000;
+
+    border:none;
+
+    border-radius:12px;
+
+    height:50px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.btn-gold:hover{
+
+    background:var(--gold-hover);
+
+    color:white;
+
+    transform:translateY(-2px);
+
+}
+
+/* ===================================
+        GLASS CARD
+=================================== */
+
+.card-glass{
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    backdrop-filter:blur(15px);
+
+    border-radius:20px;
+
+    box-shadow:0 10px 40px rgba(0,0,0,.35);
+
+    padding:40px;
+
+}
+
+/* ===================================
+        INPUT
+=================================== */
+
+.form-control{
+
+    height:50px;
+
+    border-radius:12px;
+
+    border:1px solid rgba(255,255,255,.25);
+
+    background:rgba(255,255,255,.12);
+
+    color:white;
+
+}
+
+.form-control::placeholder{
+
+    color:#d9d9d9;
+
+}
+
+.form-control:focus{
+
+    background:rgba(255,255,255,.18);
+
+    border-color:var(--gold);
+
+    color:white;
+
+    box-shadow:none;
+
+}
+
+label{
+
+    font-weight:500;
+
+    margin-bottom:8px;
+
+}
+
+/* ===================================
+        LOGIN PAGE
+=================================== */
+
+.logo-title{
+
+    font-size:52px;
+
+    font-weight:700;
+
+}
+
+.logo-title span{
+
+    color:var(--gold);
+
+}
+
+.cinema-image{
+
+    width:85%;
+
+    max-width:520px;
+
+    animation:float 4s ease-in-out infinite;
+
+}
+
+.card-glass h2{
+
+    color:white;
+
+    font-weight:600;
+
+}
+
+/* ===================================
+        FLOAT ANIMATION
+=================================== */
+
+@keyframes float{
+
+    0%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-15px);
+    }
+
+    100%{
+        transform:translateY(0);
+    }
+
+}
+
+/* ===================================
+        RESPONSIVE
+=================================== */
+
+@media(max-width:992px){
+
+    .cinema-image{
+
+        width:65%;
+
+        margin-bottom:30px;
+
+    }
+
+    .logo-title{
+
+        font-size:42px;
+
+    }
+
+    .card-glass{
+
+        padding:30px;
+
+    }
+
+}
+
+@media(max-width:576px){
+
+    .cinema-image{
+
+        width:80%;
+
+    }
+
+    .logo-title{
+
+        font-size:34px;
+
+    }
+
+}
+
+/* ===========================
+      DASHBOARD
+=========================== */
+
+.navbar{
+
+    background:#4A0412;
+
+}
+
+.navbar-brand{
+
+    font-size:28px;
+
+}
+
+.movie-card{
+
+    background:rgba(255,255,255,.08);
+
+    border:none;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    backdrop-filter:blur(10px);
+
+    transition:.3s;
+
+}
+
+.movie-card:hover{
+
+    transform:translateY(-10px);
+
+}
+
+.movie-card img{
+
+    height:420px;
+
+    object-fit:cover;
+
+}
+
+.movie-card .card-body{
+
+    color:white;
+
+}
