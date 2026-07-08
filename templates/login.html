@@ -44,7 +44,7 @@
                     </form>
 
                     <div class="text-center mt-4">
-                        Belum punya akun? <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold">Register</a>
+                        Belum punya akun? <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold">Register</a>
                     </div>
                 </div>
             </div>
@@ -73,7 +73,8 @@
             errorDiv.style.display = 'none';
 
             // 3. Kirim data ke Flask via Fetch API
-            fetch("{{ url_for('login') }}", {
+            // PERBAIKAN: url_for('auth.login')
+            fetch("{{ url_for('auth.login') }}", {
                 method: 'POST',
                 body: new FormData(form)
             })

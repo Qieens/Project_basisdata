@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Profil Saya | MovieTix{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card-glass p-5">
+
+                <div class="text-center mb-4">
+                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                         style="width:100px;height:100px;background:var(--gold);color:#000;font-size:40px;font-weight:700;">
+                        {{ user.nama[0]|upper }}
+                    </div>
+                    <h2 class="mt-3 mb-0">{{ user.nama }}</h2>
+                    <p class="text-light">{{ user.email }}</p>
+                </div>
+
+                <hr>
+
+                <h5 class="mb-3">Edit Profil</h5>
+
+                <form method="POST" action="{{ url_for('profile.profile') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input type="text" name="nama" class="form-control" value="{{ user.nama }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Password Baru</label>
+                        <input type="password" name="password" class="form-control"
+                               placeholder="Kosongkan jika tidak ingin mengubah password">
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-gold">Simpan Perubahan</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

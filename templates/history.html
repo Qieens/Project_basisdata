@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}Tiket Saya | MovieTix{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>🎟️ Tiket Saya</h2>
+    <p class="text-light">Riwayat pemesanan tiket bioskop kamu.</p>
+
+    <div class="mt-4">
+        {% for booking in bookings %}
+        <div class="card-glass p-4 mb-3">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <img src="{{ booking.poster_url }}" alt="{{ booking.judul }}"
+                         class="img-fluid rounded" style="max-height:120px; object-fit:cover;">
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-1">{{ booking.judul }}</h5>
+                    <p class="mb-1"><b>Studio :</b> {{ booking.studio }}</p>
+                    <p class="mb-1"><b>Jam Tayang :</b> {{ booking.jam }}</p>
+                    <p class="mb-1"><b>Kursi :</b> {{ booking.seats|join(', ') }}</p>
+                    <p class="mb-1"><b>Atas Nama :</b> {{ booking.nama_pemesan|default('-') }}</p>
+                    <p class="mb-0"><b>Pembayaran :</b> {{ booking.metode_pembayaran|default('-') }}</p>
+                </div>
+                <div class="col-md-2 text-md-center">
+                    {% if booking.status == 'confirmed' %}
+                    <span class="badge bg-success px-3 py-2">Terkonfirmasi</span>
+                    {% elif booking.status == 'pending' %}
+                    <span class="badge bg-warning text-dark px-3 py-2">Menunggu</span>
+                    {% else %}
+                    <span class="badge bg-secondary px-3 py-2">{{ booking.status|default('-') }}</span>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 text-md-end">
+                    <p class="mb-0 text-light" style="font-size:13px;">Total</p>
+                    <h5 class="mb-0">Rp {{ booking.total }}</h5>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card-glass text-center py-5">
+            <p class="mb-3">Kamu belum pernah memesan tiket 🎬</p>
+            <a href="{{ url_for('movies.movies') }}" class="btn btn-gold mx-auto" style="width:fit-content; padding:0 30px;">
+                Cari Film Sekarang
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@
     <title>Booking Tiket | MovieTix</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <style>
@@ -19,7 +20,7 @@
             border-radius: 10px;
             margin: 30px auto;
             width: 80%;
-            box-shadow: 0 5px 15px rgba(0,0,0,.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .3);
         }
 
         .seat {
@@ -44,150 +45,306 @@
             color: black;
         }
 
-        /* Tambahan style untuk kursi yang sudah dibooking orang lain */
         .seat.booked {
-            background: #444444;
-            color: #888888;
+            background: #5a5a5a;
+            color: #bbb;
             cursor: not-allowed;
+            opacity: .6;
         }
 
         .seat.booked:hover {
+            background: #5a5a5a;
             transform: none;
-            background: #444444;
         }
 
         .info-box {
-            background: rgba(255,255,255,.08);
+            background: rgba(255, 255, 255, .08);
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 30px;
+        }
+
+        #bookingAlert {
+            display: none;
+        }
+
+        /* ==== Modal Pembayaran ==== */
+        .payment-option {
+            background: rgba(255, 255, 255, .06);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            transition: .2s;
+        }
+
+        .payment-option i {
+            font-size: 22px;
+            color: #D4AF37;
+        }
+
+        .payment-option:hover {
+            background: rgba(255, 255, 255, .12);
+        }
+
+        .payment-option.active {
+            border-color: #D4AF37;
+            background: rgba(212, 175, 55, .15);
+        }
+
+        .payment-option input {
+            display: none;
+        }
+
+        #modalAlert {
+            display: none;
         }
     </style>
 </head>
 
 <body>
 
-<div class="container py-5">
-    <div class="card-glass p-5">
-        <h2 class="text-center">🎬 {{ movie.judul }}</h2>
-        <hr>
+    <div class="container py-5">
+        <div class="card-glass p-5">
+            <h2 class="text-center">🎬 {{ movie.judul }}</h2>
+            <hr>
 
-        <div class="info-box">
-            <div class="row text-center">
-                <div class="col-md-4">
-                    <b>Studio</b><br> {{ schedule.studio }}
-                </div>
-                <div class="col-md-4">
-                    <b>Jam</b><br> {{ schedule.jam }}
-                </div>
-                <div class="col-md-4">
-                    <b>Harga</b><br> Rp <span id="hargaSatuan">{{ schedule.harga }}</span>
+            <div class="info-box">
+                <div class="row">
+                    <div class="col-md-4">
+                        <b>Studio</b><br>
+                        {{ schedule.studio }}
+                    </div>
+                    <div class="col-md-4">
+                        <b>Jam</b><br>
+                        {{ schedule.jam }}
+                    </div>
+                    <div class="col-md-4">
+                        <b>Harga</b><br>
+                        Rp {{ schedule.harga|rupiah }}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="screen">LAYAR BIOSKOP</div>
+            <div id="bookingAlert" class="alert alert-danger"></div>
 
-        <div class="text-center">
-            {% for row in ['A','B','C','D','E'] %}
-            <div class="mb-3">
-                {% for i in range(1,7) %}
-                    <button class="seat">{{ row }}{{ i }}</button>
+            <div class="screen">LAYAR BIOSKOP</div>
+
+            <div class="text-center">
+                {% for row in ['A','B','C','D','E'] %}
+                <div class="mb-3">
+                    {% for i in range(1,7) %}
+                    {% set kode = row ~ i %}
+                    <button type="button" class="seat {% if kode in booked_seats|default([]) %}booked{% endif %}"
+                        {% if kode in booked_seats|default([]) %}disabled{% endif %}>
+                        {{ kode }}
+                    </button>
+                    {% endfor %}
+                </div>
                 {% endfor %}
             </div>
-            {% endfor %}
-        </div>
 
-        <hr>
+            <hr>
 
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <h5>Kursi Dipilih</h5>
-                <p id="selectedSeat" class="fw-bold text-warning">-</p>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5>Kursi Dipilih</h5>
+                    <p id="selectedSeat">-</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h5>Total</h5>
+                    <h3>Rp <span id="totalPrice">0</span></h3>
+                </div>
             </div>
-            <div class="col-md-6 text-end">
-                <h5>Total</h5>
-                <h3 class="text-gold">Rp <span id="totalPrice">0</span></h3>
-            </div>
+
+            <button id="openPaymentBtn" class="btn btn-gold w-100 mt-3">Lanjut Pembayaran</button>
+            <a href="{{ url_for('movies.movie_detail', id=movie._id|string) }}" class="btn btn-secondary mt-3">Kembali</a>
         </div>
-
-        <button id="btnCheckout" class="btn btn-gold w-100 mt-3">Lanjut Pembayaran</button>
-
-        <a href="{{ url_for('movie_detail', id=movie._id) }}" class="btn btn-secondary w-100 mt-2">Kembali</a>
-
     </div>
-</div>
 
-<script>
-    const seats = document.querySelectorAll(".seat");
-    const seatText = document.getElementById("selectedSeat");
-    const total = document.getElementById("totalPrice");
-    const btnCheckout = document.getElementById("btnCheckout");
-    
-    const harga = parseInt(document.getElementById("hargaSatuan").innerText);
-    let selected = [];
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #3a030c; color:white; border-radius:16px;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Detail Pembayaran</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
 
-    // Logika Pemilihan Kursi
-    seats.forEach(seat => {
-        seat.onclick = function() {
-            // Cegah klik jika kursi sudah dibooking (class booked)
-            if(this.classList.contains("booked")) return;
+                <div class="modal-body">
+                    <div id="modalAlert" class="alert alert-danger"></div>
 
-            if (this.classList.contains("selected")) {
-                this.classList.remove("selected");
-                selected = selected.filter(s => s != this.innerText);
-            } else {
-                this.classList.add("selected");
-                selected.push(this.innerText);
-            }
+                    <div class="info-box mb-4">
+                        <p class="mb-1"><b>{{ movie.judul }}</b></p>
+                        <p class="mb-1">{{ schedule.studio }} &bull; {{ schedule.jam }}</p>
+                        <p class="mb-1">Kursi: <span id="modalSeats">-</span></p>
+                        <p class="mb-0">Total: <b>Rp <span id="modalTotal">0</span></b></p>
+                    </div>
 
-            seatText.innerHTML = selected.join(", ") || "-";
-            total.innerHTML = selected.length * harga;
+                    <div class="mb-4">
+                        <label class="form-label">Nama Pemesan</label>
+                        <input type="text" id="namaPemesan" class="form-control" value="{{ username }}" placeholder="Masukkan nama lengkap" required>
+                    </div>
+
+                    <label class="form-label">Pilih Metode Pembayaran</label>
+
+                    <label class="payment-option" data-value="GoPay">
+                        <input type="radio" name="metode" value="GoPay">
+                        <i class="bi bi-wallet2"></i> GoPay
+                    </label>
+
+                    <label class="payment-option" data-value="OVO">
+                        <input type="radio" name="metode" value="OVO">
+                        <i class="bi bi-wallet2"></i> OVO
+                    </label>
+
+                    <label class="payment-option" data-value="DANA">
+                        <input type="radio" name="metode" value="DANA">
+                        <i class="bi bi-wallet2"></i> DANA
+                    </label>
+
+                    <label class="payment-option" data-value="Transfer Bank BCA">
+                        <input type="radio" name="metode" value="Transfer Bank BCA">
+                        <i class="bi bi-bank"></i> Transfer Bank BCA
+                    </label>
+
+                    <label class="payment-option" data-value="Kartu Debit/Kredit">
+                        <input type="radio" name="metode" value="Kartu Debit/Kredit">
+                        <i class="bi bi-credit-card"></i> Kartu Debit / Kredit
+                    </label>
+                </div>
+
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" id="payNowBtn" class="btn btn-gold">Bayar Sekarang</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const seats = document.querySelectorAll(".seat:not(.booked)");
+        const seatText = document.getElementById("selectedSeat");
+        const total = document.getElementById("totalPrice");
+        const alertBox = document.getElementById("bookingAlert");
+
+        const openPaymentBtn = document.getElementById("openPaymentBtn");
+        const paymentModalEl = document.getElementById("paymentModal");
+        const paymentModal = new bootstrap.Modal(paymentModalEl);
+
+        const modalAlert = document.getElementById("modalAlert");
+        const modalSeats = document.getElementById("modalSeats");
+        const modalTotal = document.getElementById("modalTotal");
+        const namaPemesanInput = document.getElementById("namaPemesan");
+        const payNowBtn = document.getElementById("payNowBtn");
+
+        const harga = {{ schedule.harga }};
+        let selected = [];
+        let selectedMetode = null;
+
+        // Helper memformat rupiah di JS
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID').format(angka);
         }
-    });
 
-    // Logika Pengiriman Data ke Server (Flask)
-    btnCheckout.addEventListener("click", function() {
-        if (selected.length === 0) {
-            alert("Silakan pilih minimal satu kursi terlebih dahulu!");
-            return;
-        }
+        seats.forEach(seat => {
+            seat.onclick = function () {
+                if (this.classList.contains("selected")) {
+                    this.classList.remove("selected");
+                    selected = selected.filter(s => s != this.innerText.trim());
+                } else {
+                    this.classList.add("selected");
+                    selected.push(this.innerText.trim());
+                }
 
-        // Mengubah teks tombol agar terlihat ada proses berjalan
-        this.innerHTML = "Memproses...";
-        this.disabled = true;
-
-        // Mengirim data menggunakan Fetch API (AJAX)
-        fetch("/process_booking", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                schedule_id: "{{ schedule._id }}",
-                seats: selected,
-                total_price: selected.length * harga
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                // Pindah ke halaman sukses/tiket jika berhasil
-                window.location.href = data.redirect_url;
-            } else {
-                alert(data.message);
-                btnCheckout.innerHTML = "Lanjut Pembayaran";
-                btnCheckout.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Terjadi kesalahan sistem.");
-            btnCheckout.innerHTML = "Lanjut Pembayaran";
-            btnCheckout.disabled = false;
+                seatText.innerHTML = selected.join(", ") || "-";
+                total.innerHTML = formatRupiah(selected.length * harga);
+            };
         });
-    });
-</script>
 
+        // Buka modal pembayaran
+        openPaymentBtn.addEventListener("click", function () {
+            alertBox.style.display = "none";
+
+            if (selected.length === 0) {
+                alertBox.textContent = "Pilih minimal 1 kursi terlebih dahulu.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            modalAlert.style.display = "none";
+            modalSeats.innerHTML = selected.join(", ");
+            modalTotal.innerHTML = formatRupiah(selected.length * harga);
+
+            paymentModal.show();
+        });
+
+        // Pilih metode pembayaran
+        document.querySelectorAll(".payment-option").forEach(option => {
+            option.addEventListener("click", function () {
+                document.querySelectorAll(".payment-option").forEach(o => o.classList.remove("active"));
+                this.classList.add("active");
+
+                this.querySelector("input").checked = true;
+                selectedMetode = this.dataset.value;
+            });
+        });
+
+        // Submit pembayaran menggunakan Fetch API
+        payNowBtn.addEventListener("click", function () {
+            modalAlert.style.display = "none";
+            const namaPemesan = namaPemesanInput.value.trim();
+
+            if (!namaPemesan) {
+                modalAlert.textContent = "Nama pemesan wajib diisi.";
+                modalAlert.style.display = "block";
+                return;
+            }
+
+            if (!selectedMetode) {
+                modalAlert.textContent = "Pilih metode pembayaran terlebih dahulu.";
+                modalAlert.style.display = "block";
+                return;
+            }
+
+            const originalText = payNowBtn.innerHTML;
+            payNowBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
+            payNowBtn.disabled = true;
+
+            // Menggunakan filter '|string' untuk konversi ObjectId yang aman
+            fetch("{{ url_for('booking.booking_confirm', schedule_id=schedule._id|string) }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    seats: selected,
+                    nama_pemesan: namaPemesan,
+                    metode_pembayaran: selectedMetode
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    window.location.href = data.redirect_url;
+                } else {
+                    modalAlert.textContent = data.message;
+                    modalAlert.style.display = "block";
+                    payNowBtn.innerHTML = originalText;
+                    payNowBtn.disabled = false;
+                }
+            })
+            .catch(err => {
+                modalAlert.textContent = "Terjadi kegagalan koneksi sistem.";
+                modalAlert.style.display = "block";
+                payNowBtn.innerHTML = originalText;
+                payNowBtn.disabled = false;
+            });
+        });
+    </script>
 </body>
 </html>
