@@ -1,0 +1,77 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}Kelola Booking{% endblock %}
+
+{% block content %}
+<h2 class="mb-1">Kelola Booking</h2>
+<p class="text-light mb-4">Semua data pemesanan tiket dari seluruh pengguna.</p>
+
+<div class="table-glass p-2">
+    <table class="table table-borderless">
+        <thead>
+            <tr>
+                <th>Film</th>
+                <th>Studio</th>
+                <th>Jam</th>
+                <th>Kursi</th>
+                <th>Pemesan</th>
+                <th>Pembayaran</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th class="text-end">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in bookings %}
+            <tr>
+                <td>{{ b.judul }}</td>
+                <td>{{ b.studio|default('-') }}</td>
+                <td><span class="badge bg-secondary">{{ b.jam|default('-') }}</span></td>
+                <td>{{ b.seats|join(', ') }}</td>
+                <td>{{ b.nama_pemesan|default('-') }}</td>
+                <td>{{ b.metode_pembayaran|default('-') }}</td>
+                <td>Rp {{ b.total|rupiah }}</td>
+                <td>
+                    {% if b.status == 'confirmed' %}
+                        <span class="badge bg-success">Confirmed</span>
+                    {% elif b.status == 'pending' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    {% elif b.status == 'cancelled' %}
+                        <span class="badge bg-danger">Cancelled</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ b.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    {% if b.status != 'confirmed' %}
+                    <form action="{{ url_for('admin.admin_update_booking_status', id=b._id|string) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="status" value="confirmed">
+                        <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Konfirmasi">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if b.status != 'cancelled' %}
+                    <form action="{{ url_for('admin.admin_update_booking_status', id=b._id|string) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="status" value="cancelled">
+                        <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Batalkan">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    <form action="{{ url_for('admin.admin_delete_booking', id=b._id|string) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data booking ini secara permanen?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="text-center py-4">Belum ada data booking.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

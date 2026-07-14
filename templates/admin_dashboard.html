@@ -1,165 +1,229 @@
-<!DOCTYPE html>
-<html lang="id">
+{% extends "admin_layout.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | MovieTix</title>
+{% block title %}Dashboard Admin{% endblock %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    <style>
-        .admin-wrapper { display:flex; min-height:100vh; }
-        .sidebar { width:250px; background:var(--maroon-dark); padding:30px 0; flex-shrink:0; }
-        .sidebar .brand { font-size:22px; font-weight:700; text-align:center; margin-bottom:40px; display:block; text-decoration:none; }
-        .sidebar a { display:block; padding:12px 30px; color:var(--silver); font-weight:500; text-decoration:none; transition:0.3s; }
-        .sidebar a:hover, .sidebar a.active { background:rgba(255,255,255,.08); color:var(--gold); border-left:4px solid var(--gold); }
-        .main-area { flex-grow:1; padding:40px; }
-        .stat-card { border-radius:16px; padding:25px; }
-        .stat-card h3 { font-size:32px; font-weight:700; margin:0; }
-        .table-glass { background:rgba(255,255,255,.06); border-radius:16px; overflow:hidden; }
-        .table-glass table { margin-bottom:0; color:var(--white); }
-        .table-glass th { background:rgba(255,255,255,.08); border:none; font-weight:600; }
-        .table-glass td { border-color:rgba(255,255,255,.08); vertical-align:middle; }
-        .poster-thumb { width:45px; height:65px; object-fit:cover; border-radius:6px; }
-    </style>
-</head>
-
-<body>
-
-<div class="admin-wrapper">
-    <aside class="sidebar">
-        <a href="#" class="brand">🎬 Movie<span style="color:#D4AF37;">Tix</span> <br><small style="font-size:13px; color:var(--silver);">Admin Panel</small></a>
-        <a href="{{ url_for('admin.admin_dashboard') }}" class="active"><i class="bi bi-grid me-2"></i>Dashboard</a>
-        <a href="#film"><i class="bi bi-film me-2"></i>Kelola Film</a>
-        <a href="#jadwal"><i class="bi bi-clock me-2"></i>Kelola Jadwal</a>
-        <a href="#user"><i class="bi bi-people me-2"></i>Kelola User</a>
-        <a href="{{ url_for('dashboard.dashboard') }}"><i class="bi bi-arrow-left me-2"></i>Kembali ke Situs</a>
-        <a href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
-    </aside>
-
-    <div class="main-area">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="mb-0">Halo, {{ username }} 👋</h2>
-                <p class="text-light mb-0">Berikut ringkasan aktivitas MovieTix hari ini.</p>
-            </div>
-            <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#movieModal">
-                <i class="bi bi-plus-lg me-1"></i> Tambah Film
-            </button>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="stat-card card-glass">
-                    <p class="mb-1 text-light">Total Film</p>
-                    <h3>{{ total_movies|default(movies|length) }}</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card card-glass">
-                    <p class="mb-1 text-light">Total User</p>
-                    <h3>{{ total_users|default(0) }}</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card card-glass">
-                    <p class="mb-1 text-light">Total Booking</p>
-                    <h3>{{ total_bookings|default(0) }}</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card card-glass">
-                    <p class="mb-1 text-light">Pendapatan</p>
-                    <h3>Rp {{ total_revenue|rupiah if total_revenue else 0 }}</h3>
-                </div>
-            </div>
-        </div>
-
-        <h4 class="mb-3" id="film">Daftar Film</h4>
-        <div class="table-glass p-2 mb-5">
-            <table class="table table-borderless">
-                <thead>
-                    <tr>
-                        <th>Poster</th>
-                        <th>Judul</th>
-                        <th>Genre</th>
-                        <th>Durasi</th>
-                        <th>Rating</th>
-                        <th class="text-end">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for movie in movies %}
-                    <tr>
-                        <td><img src="{{ movie.poster_url }}" class="poster-thumb" alt="{{ movie.judul }}"></td>
-                        <td>{{ movie.judul }}</td>
-                        <td>{{ movie.genre|default('-') }}</td>
-                        <td>{{ movie.durasi }} menit</td>
-                        <td>⭐ {{ movie.rating }}</td>
-                        <td class="text-end">
-                            <form action="{{ url_for('admin.admin_delete_movie', id=movie._id|string) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus film ini?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center py-4">Belum ada data film.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mb-3" id="jadwal">
-            <h4 class="mb-0">Daftar Jadwal Tayang</h4>
-            <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#scheduleModal">
-                <i class="bi bi-plus-lg me-1"></i> Tambah Jadwal
-            </button>
-        </div>
-        <div class="table-glass p-2">
-            <table class="table table-borderless">
-                <thead>
-                    <tr>
-                        <th>Judul Film</th>
-                        <th>Studio</th>
-                        <th>Jam Tayang</th>
-                        <th>Harga</th>
-                        <th class="text-end">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for jadwal in schedules %}
-                    <tr>
-                        <td>{{ jadwal.judul }}</td>
-                        <td>{{ jadwal.studio }}</td>
-                        <td><span class="badge bg-secondary">{{ jadwal.jam }}</span></td>
-                        <td>Rp {{ jadwal.harga|rupiah }}</td>
-                        <td class="text-end">
-                            <form action="{{ url_for('schedule.delete_schedule', id=jadwal._id|string) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus jadwal ini?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-4">Belum ada data jadwal.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        </div>
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Halo, {{ username }} 👋</h2>
+        <p class="text-light mb-0">Berikut ringkasan aktivitas MovieTix hari ini.</p>
+    </div>
+    <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#movieModal">
+        <i class="bi bi-plus-lg me-1"></i> Tambah Film
+    </button>
 </div>
 
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card card-glass">
+            <p class="mb-1 text-light">Total Film</p>
+            <h3>{{ total_movies|default(movies|length) }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card-glass">
+            <p class="mb-1 text-light">Total User</p>
+            <h3>{{ total_users|default(0) }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card-glass">
+            <p class="mb-1 text-light">Total Booking</p>
+            <h3>{{ total_bookings|default(0) }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card-glass">
+            <p class="mb-1 text-light">Pendapatan</p>
+            <h3>Rp {{ total_revenue|rupiah if total_revenue else 0 }}</h3>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3" id="film">Daftar Film</h4>
+<div class="table-glass p-2 mb-5">
+    <table class="table table-borderless">
+        <thead>
+            <tr>
+                <th>Poster</th>
+                <th>Judul</th>
+                <th>Genre</th>
+                <th>Durasi</th>
+                <th>Rating</th>
+                <th class="text-end">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movie in movies %}
+            <tr>
+                <td><img src="{{ movie.poster_url }}" class="poster-thumb" alt="{{ movie.judul }}"></td>
+                <td>{{ movie.judul }}</td>
+                <td>{{ movie.genre|default('-') }}</td>
+                <td>{{ movie.durasi }} menit</td>
+                <td>⭐ {{ movie.rating }}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="modal" data-bs-target="#editMovieModal{{ movie._id|string }}" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <form action="{{ url_for('admin.admin_delete_movie', id=movie._id|string) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus film ini?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+
+                    <!-- Modal Edit Film -->
+                    <div class="modal fade" id="editMovieModal{{ movie._id|string }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content text-start" style="background:var(--maroon-dark); color:white; border-radius:16px;">
+                                <form method="POST" action="{{ url_for('admin.admin_edit_movie', id=movie._id|string) }}">
+                                    <div class="modal-header border-secondary">
+                                        <h5 class="modal-title">Edit Film</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Judul Film</label>
+                                            <input type="text" name="judul" class="form-control" value="{{ movie.judul }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Genre</label>
+                                            <input type="text" name="genre" class="form-control" value="{{ movie.genre|default('') }}">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6 mb-3">
+                                                <label class="form-label">Durasi (menit)</label>
+                                                <input type="number" name="durasi" class="form-control" value="{{ movie.durasi }}" required>
+                                            </div>
+                                            <div class="col-6 mb-3">
+                                                <label class="form-label">Rating</label>
+                                                <input type="number" step="0.1" min="0" max="10" name="rating" class="form-control" value="{{ movie.rating }}">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">URL Poster</label>
+                                            <input type="text" name="poster_url" class="form-control" value="{{ movie.poster_url|default('') }}">
+                                        </div>
+                                        <div class="mb-1">
+                                            <label class="form-label">Sinopsis</label>
+                                            <textarea name="sinopsis" class="form-control" rows="3">{{ movie.sinopsis|default('') }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-secondary">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-gold">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center py-4">Belum ada data film.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3" id="jadwal">
+    <h4 class="mb-0">Daftar Jadwal Tayang</h4>
+    <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+        <i class="bi bi-plus-lg me-1"></i> Tambah Jadwal
+    </button>
+</div>
+<div class="table-glass p-2">
+    <table class="table table-borderless">
+        <thead>
+            <tr>
+                <th>Judul Film</th>
+                <th>Studio</th>
+                <th>Jam Tayang</th>
+                <th>Harga</th>
+                <th class="text-end">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for jadwal in schedules %}
+            <tr>
+                <td>{{ jadwal.judul }}</td>
+                <td>{{ jadwal.studio }}</td>
+                <td><span class="badge bg-secondary">{{ jadwal.jam }}</span></td>
+                <td>Rp {{ jadwal.harga|rupiah }}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="modal" data-bs-target="#editScheduleModal{{ jadwal._id|string }}" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <form action="{{ url_for('schedule.delete_schedule', id=jadwal._id|string) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus jadwal ini?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+
+                    <!-- Modal Edit Jadwal -->
+                    <div class="modal fade" id="editScheduleModal{{ jadwal._id|string }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content text-start" style="background:var(--maroon-dark); color:white; border-radius:16px;">
+                                <form method="POST" action="{{ url_for('schedule.edit_schedule', id=jadwal._id|string) }}">
+                                    <div class="modal-header border-secondary">
+                                        <h5 class="modal-title">Edit Jadwal Tayang</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Pilih Film</label>
+                                            <select name="judul" class="form-select" required>
+                                                {% for movie in movies %}
+                                                <option value="{{ movie.judul }}" {% if movie.judul == jadwal.judul %}selected{% endif %}>{{ movie.judul }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Studio</label>
+                                            <select name="studio" class="form-select" required>
+                                                <option value="Studio 1" {% if jadwal.studio == "Studio 1" %}selected{% endif %}>Studio 1</option>
+                                                <option value="Studio 2" {% if jadwal.studio == "Studio 2" %}selected{% endif %}>Studio 2</option>
+                                                <option value="Studio 3" {% if jadwal.studio == "Studio 3" %}selected{% endif %}>Studio 3</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Jam Tayang</label>
+                                            <select name="jam" class="form-select" required>
+                                                <option value="10:30" {% if jadwal.jam == "10:30" %}selected{% endif %}>10:30</option>
+                                                <option value="13:00" {% if jadwal.jam == "13:00" %}selected{% endif %}>13:00</option>
+                                                <option value="15:30" {% if jadwal.jam == "15:30" %}selected{% endif %}>15:30</option>
+                                                <option value="18:00" {% if jadwal.jam == "18:00" %}selected{% endif %}>18:00</option>
+                                                <option value="20:30" {% if jadwal.jam == "20:30" %}selected{% endif %}>20:30</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Harga Tiket (Rp)</label>
+                                            <input type="number" name="harga" class="form-control" value="{{ jadwal.harga }}" required placeholder="Contoh: 35000">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-secondary">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-gold">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center py-4">Belum ada data jadwal.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Modal Tambah Film -->
 <div class="modal fade" id="movieModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content" style="background:var(--maroon-dark); color:white; border-radius:16px;">
@@ -205,6 +269,7 @@
     </div>
 </div>
 
+<!-- Modal Tambah Jadwal -->
 <div class="modal fade" id="scheduleModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content" style="background:var(--maroon-dark); color:white; border-radius:16px;">
@@ -233,7 +298,7 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Jam Tayang (Slot Pasti)</label>
+                        <label class="form-label">Jam Tayang</label>
                         <select name="jam" class="form-select" required>
                             <option value="" disabled selected>-- Pilih Jam Tayang --</option>
                             <option value="10:30">10:30</option>
@@ -256,7 +321,4 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

@@ -73,6 +73,48 @@ def delete_schedule(id):
 
 
 # ==========================================
+# EDIT JADWAL (Hanya Admin)
+# ==========================================
+@schedule_bp.route("/admin/schedule/edit/<id>", methods=["POST"])
+@admin_required
+def edit_schedule(id):
+    """
+    Fungsi untuk mengedit jadwal tayang berdasarkan ID.
+    Dilengkapi dengan validasi agar jadwal tidak bentrok.
+    """
+    judul = request.form.get("judul")
+    studio = request.form.get("studio")
+    jam = request.form.get("jam")
+    
+    try:
+        harga = int(request.form.get("harga") or 0)
+    except ValueError:
+        harga = 0
+
+    # Validasi bentrok (kecuali jadwal yang sedang diedit ini sendiri)
+    jadwal_bentrok = db.schedules.find_one({
+        "_id": {"$ne": ObjectId(id)},
+        "studio": studio,
+        "jam": jam
+    })
+
+    if jadwal_bentrok:
+        return f"GAGAL: {studio} sudah digunakan untuk pemutaran film '{jadwal_bentrok['judul']}' pada jam {jam}. Silakan kembali dan pilih jam atau studio lain.", 400
+
+    db.schedules.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {
+            "judul": judul,
+            "studio": studio,
+            "jam": jam,
+            "harga": harga
+        }}
+    )
+
+    return redirect(url_for("admin.admin_dashboard"))
+
+
+# ==========================================
 # API GET JADWAL 
 # ==========================================
 @schedule_bp.route("/api/schedules/<judul_film>")

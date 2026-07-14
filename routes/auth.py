@@ -1,14 +1,14 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import db  # Pastikan ini mengarah ke koneksi database Anda
+from database import db
+from config import Config
 
-# 1. Deklarasi Blueprint
-# Parameter pertama 'auth' adalah nama blueprint
 auth_bp = Blueprint('auth', __name__)
 
-# 2. Ganti @app.route menjadi @nama_blueprint.route
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    role = request.args.get('role', 'user')
+
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -18,15 +18,18 @@ def login():
             session["user"] = user["nama"]
             session["user_id"] = str(user["_id"])
             session["role"] = user.get("role", "user")
-            # Perhatikan perubahan pada url_for di bawah ini
+            if session["role"] == "admin":
+                return jsonify({"status": "success", "redirect_url": url_for('admin.admin_dashboard')})
             return jsonify({"status": "success", "redirect_url": url_for('dashboard.dashboard')})
         else:
             return jsonify({"status": "error", "message": "Email atau Password salah!"})
 
-    return render_template('login.html')
+    return render_template('login.html', login_role=role)
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+    role = request.args.get('role', 'user')
+
     if request.method == "POST":
         nama = request.form["nama"]
         email = request.form["email"]
@@ -41,11 +44,35 @@ def register():
             "password": generate_password_hash(password),
             "role": "user"
         })
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("auth.login", role="user"))
 
-    return render_template("register.html")
+    return render_template("register.html", login_role=role)
 
 @auth_bp.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("home"))
+
+@auth_bp.route("/register-admin", methods=["GET", "POST"])
+def register_admin():
+    if request.method == "POST":
+        nama = request.form.get("nama", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        kode_admin = request.form.get("kode_admin", "").strip()
+
+        if kode_admin != Config.ADMIN_CODE:
+            return jsonify({"status": "error", "message": "Kode admin salah!"})
+
+        if db.users.find_one({"email": email}):
+            return jsonify({"status": "error", "message": "Email sudah terdaftar!"})
+
+        db.users.insert_one({
+            "nama": nama,
+            "email": email,
+            "password": generate_password_hash(password),
+            "role": "admin"
+        })
+        return jsonify({"status": "success", "redirect_url": url_for("auth.login", role="admin")})
+
+    return render_template("register_admin.html")

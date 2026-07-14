@@ -39,7 +39,10 @@ def generate_schedules():
                 "harga": random.choice(prices)
             }
             schedules_to_insert.append(schedule)
-            print(f"Jadwal dibuat: {movie['judul']} - {jam}")
+            try:
+                print(f"Jadwal dibuat: {movie['judul']} - {jam}")
+            except UnicodeEncodeError:
+                print(f"Jadwal dibuat: {movie['judul'].encode('utf-8', errors='ignore').decode('ascii', errors='ignore')} - {jam}")
 
     # Masukkan semua jadwal ke MongoDB
     if schedules_to_insert:

@@ -12,14 +12,20 @@ def movies():
     query = request.args.get("q", "").strip()
     selected_genre = request.args.get("genre", "").strip()
 
-    filter_query = {}
-    if query:
-        filter_query["judul"] = {"$regex": query, "$options": "i"}
-    if selected_genre:
-        filter_query["genre"] = selected_genre
+    movies_list = list(db.movies.find())
 
-    movies_list = list(db.movies.find(filter_query))
-    genres = [g for g in db.movies.distinct("genre") if g]
+    if query:
+        movies_list = [m for m in movies_list if query.lower() in m.get("judul", "").lower()]
+
+    if selected_genre:
+        movies_list = [m for m in movies_list if selected_genre.lower() in m.get("genre", "").lower()]
+
+    all_genres = set()
+    for m in db.movies.find({}, {"genre": 1}):
+        g = m.get("genre", "").strip()
+        if g:
+            all_genres.add(g)
+    genres = sorted(all_genres)
 
     return render_template(
         "movies.html",

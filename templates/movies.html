@@ -7,21 +7,28 @@
     <h2>🎬 Daftar Film</h2>
     <p class="text-light">Cari dan pilih film favoritmu untuk segera dibooking.</p>
 
-    <<form method="GET" action="{{ url_for('movies.movies') }}" class="row g-2 mt-3 mb-4">
-        <div class="col-md-6">
+    <form method="GET" action="{{ url_for('movies.movies') }}" class="row g-2 mt-3 mb-4">
+        <div class="col-md-5">
             <input type="text" name="q" class="form-control" placeholder="Cari judul film..."
                    value="{{ query|default('') }}">
         </div>
         <div class="col-md-4">
-            <select name="genre" class="form-control">
+            <select name="genre" class="form-select">
                 <option value="">Semua Genre</option>
-                {% for g in genres|default([]) %}
+                {% for g in genres %}
                 <option value="{{ g }}" {% if selected_genre == g %}selected{% endif %}>{{ g }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-2 d-grid">
             <button type="submit" class="btn btn-gold">Cari</button>
+        </div>
+        <div class="col-md-1 d-grid">
+            {% if query or selected_genre %}
+            <a href="{{ url_for('movies.movies') }}" class="btn btn-outline-light" title="Reset">
+                <i class="bi bi-x-lg"></i>
+            </a>
+            {% endif %}
         </div>
     </form>
 
@@ -44,7 +51,7 @@
         {% else %}
         <div class="col-12">
             <div class="card-glass text-center py-5">
-                <p class="mb-0">Tidak ada film yang ditemukan 😔</p>
+                <p class="mb-0">Tidak ada film yang ditemukan.</p>
             </div>
         </div>
         {% endfor %}

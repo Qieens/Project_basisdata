@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from config import Config
 from database import db
 
@@ -31,9 +31,7 @@ def rupiah_filter(number):
 # ===========================
 @app.route("/")
 def home():
-    # Jika tidak ada landing page khusus, bisa langsung dialihkan ke login
-    from flask import redirect, url_for
-    return redirect(url_for('auth.login'))
+    return render_template("home.html")
 
 # 3. Daftarkan (Register) Blueprint ke aplikasi utama
 app.register_blueprint(auth_bp)

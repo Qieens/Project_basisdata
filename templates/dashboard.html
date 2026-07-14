@@ -17,7 +17,7 @@
                 <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.judul }}">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ movie.judul }}</h5>
-                    <p class="mb-1"><b>Genre :</b> {{ movie.genre }}</p>
+                    <p class="mb-1"><b>Genre :</b> {{ movie.genre|default('-') }}</p>
                     <p class="mb-1"><b>Durasi :</b> {{ movie.durasi }} Menit</p>
                     <p class="mb-3">⭐ {{ movie.rating }}</p>
                     <a href="{{ url_for('movies.movie_detail', id=movie._id|string) }}" class="btn btn-gold mt-auto">

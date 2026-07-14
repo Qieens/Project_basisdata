@@ -244,7 +244,7 @@
         const namaPemesanInput = document.getElementById("namaPemesan");
         const payNowBtn = document.getElementById("payNowBtn");
 
-        const harga = {{ schedule.harga }};
+        const harga = {{ schedule.harga or 0 }};
         let selected = [];
         let selectedMetode = null;
 

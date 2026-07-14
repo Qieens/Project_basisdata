@@ -61,8 +61,13 @@
 
                 <div class="text-center mt-4">
                     Sudah punya akun?
-                    <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-bold text-gold">
+                    <a href="{{ url_for('auth.login', role='user') }}" class="text-decoration-none fw-bold text-gold">
                         Login
+                    </a>
+                </div>
+                <div class="text-center mt-2">
+                    <a href="{{ url_for('home') }}" class="text-decoration-none" style="font-size:13px; color:var(--silver);">
+                        <i class="bi bi-arrow-left me-1"></i>Kembali
                     </a>
                 </div>
 

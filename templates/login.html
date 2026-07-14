@@ -44,7 +44,12 @@
                     </form>
 
                     <div class="text-center mt-4">
-                        Belum punya akun? <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold">Register</a>
+                        Belum punya akun? <a href="{{ url_for('auth.register', role='user') }}" class="text-decoration-none fw-bold">Register</a>
+                    </div>
+                    <div class="text-center mt-2">
+                        <a href="{{ url_for('home') }}" class="text-decoration-none" style="font-size:13px; color:var(--silver);">
+                            <i class="bi bi-arrow-left me-1"></i>Kembali
+                        </a>
                     </div>
                 </div>
             </div>
@@ -56,47 +61,38 @@
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Mencegah form melakukan refresh halaman default
+            e.preventDefault();
             
             const form = this;
             const submitBtn = document.getElementById('loginBtn');
             const passwordInput = document.getElementById('password');
             const errorDiv = document.getElementById('passwordError');
             
-            // 1. Ubah tampilan tombol menjadi loading (Opsional tapi bagus untuk UI)
             const originalBtnText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
             submitBtn.disabled = true;
 
-            // 2. Reset tampilan error jika sebelumnya ada
             passwordInput.classList.remove('is-invalid', 'border-danger');
             errorDiv.style.display = 'none';
 
-            // 3. Kirim data ke Flask via Fetch API
-            // PERBAIKAN: url_for('auth.login')
             fetch("{{ url_for('auth.login') }}", {
                 method: 'POST',
                 body: new FormData(form)
             })
-            .then(response => response.json()) // Ekspektasi balasan dari Flask berupa JSON
+            .then(response => response.json())
             .then(data => {
                 if (data.status === 'error') {
-                    // Jika salah, tampilkan garis merah dan teks error di bawah password
                     passwordInput.classList.add('is-invalid', 'border-danger');
                     errorDiv.textContent = data.message;
                     errorDiv.style.display = 'block';
-                    
-                    // Kembalikan tombol ke keadaan semula
                     submitBtn.innerHTML = originalBtnText;
                     submitBtn.disabled = false;
                 } else if (data.status === 'success') {
-                    // Jika sukses, arahkan ke halaman index/dashboard
                     window.location.href = data.redirect_url;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Kembalikan tombol jika terjadi error koneksi
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.disabled = false;
             });
